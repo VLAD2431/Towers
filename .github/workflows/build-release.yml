@@ -1,0 +1,62 @@
+name: Build and Release Maven Plugin
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Скачивание кода
+        uses: actions/checkout@v4
+
+      - name: Установка Java 21 и кэширование Maven
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Сборка плагина через Maven
+        run: mvn clean package -B
+
+      - name: Публикация Dev-сборки в Releases
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-dev
+          name: "Dev Build (Автосборка)"
+          body: "Автоматическая сборка из коммита ${{ github.sha }}"
+          prerelease: true
+          files: |
+            target/*.jar
+            !target/original-*.jar
+            !target/*-sources.jar
+            !target/*-javadoc.jar
+
+      - name: Извлечение описания из аннотации тега
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > release_notes.md
+
+      - name: Публикация релиза по тегу
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Release ${{ github.ref_name }}"
+          body_path: release_notes.md
+          generate_release_notes: true
+          prerelease: false
+          files: |
+            target/*.jar
+            !target/original-*.jar
+            !target/*-sources.jar
+            !target/*-javadoc.jar

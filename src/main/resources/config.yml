@@ -1,0 +1,859 @@
+weekly-quest-count: 3
+# Период в часах с привязкой к времени суток ниже; 168 — раз в неделю.
+weekly-refresh-hours: 168
+# Время обновления по Москве (Europe/Moscow), формат ЧЧ:ММ.
+weekly-refresh-time: "16:00"
+
+displays:
+  # Objects are plain click zones: only the size of the hitbox is configured, no model is built.
+  central-tower:
+    hitbox-width: 1
+    hitbox-height: 1
+  # One hitbox for all numbered calibration towers (tower-1 ... tower-16).
+  calibration-tower:
+    hitbox-width: 1
+    hitbox-height: 1
+  # One hitbox for all computers (computer-1 ... computer-16).
+  chunk-tower:
+    hitbox-width: 1
+    hitbox-height: 1
+
+menus:
+  item-model: quack_gui:paper
+  # Скрывает всплывающую подсказку у предмета в слоте 0 во всех меню (Paper setHideTooltip).
+  hide-slot0-tooltip: true
+  tower:
+    title: <dark_gray>Доступные задания
+    size: 54
+    material: PAPER
+    item-model: quack_gui:paper
+    info-model: comp_gui
+    central-model: centre_icon
+    towers:
+      unavailable: tower_icon
+      available: tower_task_icon
+      in-progress: tower_task_icon
+      story: tower_story_icon
+      available-name: <i:false><aqua>Вышка [{tower}]
+      available-lore:
+        - <i:false><gray>Обнаружена аномалия
+        - "<i:false><gray>Координаты: </gray><aqua>[{x} {z}]"
+        - <i:false><gray>Взяться за задание | </gray><aqua>ЛКМ
+      unavailable-name: <i:false><green>Вышка [{tower}]
+      unavailable-lore:
+        - <i:false><gray>Ничего не выявлено
+        - "<i:false><gray>Координаты: </gray><green>[{x} {z}]"
+      in-progress-name: <i:false><aqua>Вышка [{tower}]
+      in-progress-lore:
+        - <i:false><gray>Обнаружена аномалия
+        - "<i:false><gray>Координаты: </gray><aqua>[{x} {z}]"
+        - <i:false><aqua>Задание активно!
+    info-name: <yellow>Еженедельные задания
+    info-lore:
+      - <gray>Каждую неделю доступны три вышки
+    central-name: <i:false><green>Вышка [Центрий]
+    central-lore:
+      - "<i:false><gray>До обновления заданий: </gray><aqua>[{time}]"
+    # Формат общего таймера до следующего обновления заданий ({days} {hours} {minutes}).
+    central-time-format: "{days}д {hours}ч {minutes}м"
+  calibration:
+    title: <dark_gray>Калибровка вышки
+    size: 27
+    material: PAPER
+    item-model: quack_gui:paper
+    slot0-model: colib_gui
+    # Скрывает всплывающую подсказку у всех предметов меню калибровки (как hide-slot0-tooltip, но для всего меню).
+    hide-tooltips: true
+    stage-models:
+      - colib_complite0
+      - colib_complite1
+      - colib_complite2
+      - colib_complite3
+    real-model: button_light
+    fake-model: button_light1
+    slot0-name: <yellow>Калибровка
+    slot0-lore:
+      - <gray>Найдите нужные бумаги
+    stage-name: <yellow>Этап {stage} из {stages}
+    stage-lore:
+      - <gray>Текущий этап калибровки
+    real-name: <white>Бумага
+    real-lore:
+      - <gray>Нажмите на бумагу
+    fake-name: <gray>Бумага
+    fake-lore:
+      - <gray>Нажмите на бумагу
+  chunk-map:
+    title: <dark_gray>Определение чанка
+    size: 54
+    material: PAPER
+    item-model: quack_gui:paper
+    info-model: comp_gui
+    sector-model: sector_icon
+    found-model: sector_task_icon
+    computer-model: centre_icon
+    preview-model: sector_icon
+    preview-computer-model: centre_icon
+    assigned-model: sector_block_icon
+    assigned-computer-model: centre_block_icon
+    info-name: <yellow>Определение чанка
+    info-lore:
+      - "<gray>Область: {grid-size}×{grid-size} секторов"
+      - "<gray>Сектор: {sector-size}×{sector-size} чанков"
+    sector-name: <i:false><green>Сектор {sector}
+    sector-lore:
+      - "<i:false><gray>Центральный чанк: </gray><green>[{x} {z}]"
+    found-name: <i:false><aqua>Сектор {sector}
+    found-lore:
+      - "<i:false><gray>Центральный чанк: </gray><aqua>[{x} {z}]"
+      - "<i:false><gray>Найдена аномалия: </gray><aqua>[{wave-x} {wave-z}]"
+    computer-name: <i:false><green>Центральный сектор
+    computer-lore:
+      - "<i:false><gray>Центральный чанк: </gray><green>[{x} {z}]"
+      - <i:false><gray>Вы здесь.
+    preview-computer-name: <i:false><green>Центральный сектор
+    preview-computer-lore:
+      - "<i:false><gray>Центральный чанк: </gray><green>[{x} {z}]"
+      - <i:false><gray>Вы здесь.
+    preview-name: <i:false><green>Сектор {sector}
+    preview-lore:
+      - "<i:false><gray>Центральный чанк: </gray><green>[{x} {z}]"
+    assigned-computer-name: <i:false><red>Центральный сектор
+    assigned-computer-lore:
+      - <i:false><red>Требуется калибровка
+    assigned-name: <i:false><red>Сектор {sector}
+    assigned-lore:
+      - <i:false><red>Требуется калибровка
+
+calibration:
+  stages: 3
+  papers-per-stage: 5
+  real-per-stage: 2
+  display-ticks: 30
+
+chunk-area:
+  # Волны выбираются в пределах меню (5×5 секторов); большее значение обрезается до 5.
+  grid-size: 5
+  # Размер сектора в чанках. Сектор компьютера (центр карты) не используется: разлом и волна
+  # всегда появляются в одном из остальных 24 секторов, выбранном случайно.
+  sector-size: 20
+  waves: 3
+  # Пауза между волнами, в секундах. Следующая волна начинается через случайное время из этого
+  # диапазона: так волны не накрывают друг друга сразу.
+  wave-interval-min-seconds: 5
+  wave-interval-max-seconds: 7
+
+# Мобы CustomMob добавляются в mobs, например: 'custom:pumpkin_soul': { counts: [0, 1, 2] }
+# Доступны skelebass, dancebomber, pumpkin, pumpkin_soul, pumpkin_brute, pumpkin_poison.
+wave-types:
+  zombie:
+    chance: 11
+    # ID предметов из rift-loot, привязанных к этому типу волны.
+    loot:
+      - chrono_token
+      - shlak
+      - ars
+      - imba
+    mobs:
+      ZOMBIE:
+        counts:
+          - 2
+          - 4
+          - 6
+        # Пример: баффы при спавне (level — уровень, duration — в тиках, -1 = бесконечно).
+        effects:
+          - type: SPEED
+            level: 2
+            duration: -1
+          - type: STRENGTH
+            level: 2
+            duration: -1
+          - type: RESISTANCE
+            level: 3
+            duration: -1
+        # Частицы вокруг моба (interval — раз в сколько тиков, speed — скорость частиц).
+        # Переход цвета (только DUST / DUST_COLOR_TRANSITION): hex-цвета "#RRGGBB", size — размер.
+        # Для DUST нужен только from-color; при отсутствии цвета частица спавнится без окраски.
+        # Внимание: у DUST при count: 0 значение speed трактуется как яркость, поэтому count > 0.
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+      SKELETON:
+        counts:
+          - 1
+          - 2
+          - 4
+        effects:
+          - type: STRENGTH
+            level: 4
+            duration: -1
+          - type: SPEED
+            level: 1
+            duration: -1
+          - type: RESISTANCE
+            level: 2
+            duration: -1
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+  pillager:
+    chance: 11
+    # Укажите ID предметов из rift-loot, например: loot: [chrono_token]
+    loot:
+      - chrono_token
+      - shlak
+      - ars
+      - imba
+      - totem
+    mobs:
+      VINDICATOR:
+        counts:
+          - 1
+          - 2
+          - 3
+        effects:
+          - type: SPEED
+            level: 1
+            duration: -1
+          - type: STRENGTH
+            level: 2
+            duration: -1
+          - type: RESISTANCE
+            level: 3
+            duration: -1
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+      RAVAGER:
+        counts:
+          - 1
+          - 1
+          - 2
+        effects: []
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+      PILLAGER:
+        counts:
+          - 2
+          - 3
+          - 5
+        effects:
+          - type: SPEED
+            level: 2
+            duration: -1
+          - type: STRENGTH
+            level: 3
+            duration: -1
+          - type: RESISTANCE
+            level: 2
+            duration: -1
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+      EVOKER:
+        counts:
+          - 0
+          - 1
+          - 2
+        effects:
+          - type: SPEED
+            level: 1
+            duration: -1
+          - type: STRENGTH
+            level: 0
+            duration: -1
+          - type: RESISTANCE
+            level: 2
+            duration: -1
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+  pumpkin:
+    chance: 26
+    loot:
+      - chrono_token
+      - ars
+      - shlak
+      - imba
+      - blueprint_heart
+      - blueprint_reaper
+    mobs:
+      "custom:pumpkin":
+        counts:
+          - 2
+          - 2
+          - 4
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+      "custom:pumpkin_soul":
+        counts:
+          - 1
+          - 3
+          - 3
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+      "custom:pumpkin_poison":
+        counts:
+          - 0
+          - 1
+          - 3
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+      "custom:pumpkin_brute":
+        counts:
+          - 0
+          - 1
+          - 3
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+  skelebas:
+    chance: 26
+    loot:
+      - chrono_token
+      - shlak
+      - ars
+      - imba
+      - blueprint_guitar
+      - scroll_guitar_blue
+      - scroll_guitar_wave
+      - scroll_guitar_litghtningbolt
+      - scroll_guitar_black
+      - scroll_guitar_gradient
+      - scroll_guitar_mgla
+      - scroll_guitar_white
+      - scroll_guitar_badtime
+      - scroll_guitar_glem
+      - scroll_guitar_gold
+    mobs:
+      "custom:skelebass":
+        counts:
+          - 2
+          - 4
+          - 6
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+      "custom:dancebomber":
+        counts:
+          - 1
+          - 2
+          - 4
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+  harry_mono:
+    chance: 26
+    waves: 1
+    loot:
+      - chrono_token
+      - ars
+      - shlak
+      - imba
+      - blueprint_bike
+      - nitro_token
+    mobs:
+      "custom:harry_mono":
+        counts:
+          - 1
+        particles:
+          - type: DUST_COLOR_TRANSITION
+            count: 5
+            spread: 0.3
+            speed: 0
+            interval: 1
+            size: 0.7
+            from-color: "#E6FFFF"
+            to-color: "#2BA3D9"
+          - type: OMINOUS_SPAWNING
+            count: 3
+            spread: 0.3
+            speed: 0.2
+            interval: 5
+
+rift:
+  material: WOODEN_HOE
+  item-model: WOODEN_HOE
+  custom-model-data: rift
+  scale: 5
+  height: 15
+  # Дальность отрисовки самой модели рифта, отдельно от облака частиц.
+  view-distance: 64
+  # Яркость разлома (0–15), чтобы модель светилась независимо от освещения.
+  block-light: 15
+  sky-light: 15
+  # Разлом невидим, пока игрок не подойдёт ближе этого расстояния (блоки); 0 — открыться сразу.
+  open-distance: 32
+  # Когда открывается разлом:
+  #   chunk — разлом спит, пока игрок не вошёл в его чанк (обычный режим);
+  #   distance — разлом открывается, когда игрок подошёл ближе open-distance.
+  open-mode: chunk
+  # Облако частиц разлома: показывается всё время, пока существует разлом.
+  # particles — список частиц; interval — тиков между облаками,
+  # view-distance — сколько блоков видно облако; это отдельная настройка от рифта.
+  # offset-x/y/z — разброс по осям в блоках, speed — скорость частиц.
+  # size/from-color/to-color — данные для DUST и DUST_COLOR_TRANSITION.
+  cloud:
+    interval: 4
+    view-distance: 128
+    particles:
+      - type: OMINOUS_SPAWNING
+        count: 10
+        offset-x: 2.5
+        offset-y: 1.5
+        offset-z: 2.5
+        speed: 0.2
+      - type: DUST_COLOR_TRANSITION
+        count: 5
+        offset-x: 2.5
+        offset-y: 0.5
+        offset-z: 2.5
+        speed: 0
+        size: 3
+        from-color: "#E6FFFF"
+        to-color: "#2BA3D9"
+  # Кадры анимации: tick — смещение в тиках, x/y/z — доли от scale (1 = полный размер).
+  # Открытие проигрывается один раз, когда разлом открывается.
+  open-frames:
+    - tick: 0
+      x: 0
+      y: 0
+      z: 0.2
+    - tick: 2
+      x: 1
+      y: 0
+      z: 0.2
+    - tick: 4
+      x: 1
+      y: 0.2
+      z: 0.2
+    - tick: 7
+      x: 1
+      y: 0.2
+      z: 1
+    - tick: 10
+      x: 1
+      y: 1
+      z: 1
+  # Пульсация зациклена; последний кадр должен совпадать с первым, иначе будет рывок.
+  pulse-frames:
+    - tick: 0
+      x: 1
+      y: 1
+      z: 1
+    - tick: 2
+      x: 1
+      y: 1.02
+      z: 1.02
+    - tick: 4
+      x: 1.02
+      y: 1.02
+      z: 1
+    - tick: 6
+      x: 1
+      y: 1
+      z: 1
+    - tick: 8
+      x: 1
+      y: 1.02
+      z: 1.02
+    - tick: 10
+      x: 1.02
+      y: 1.02
+      z: 1
+    - tick: 12
+      x: 1
+      y: 1
+      z: 1
+  # Закрытие при исчезновении разлома; пустой список — исчезнуть мгновенно.
+  close-frames:
+    - tick: 0
+      x: 1
+      y: 1
+      z: 1
+    - tick: 3
+      x: 1
+      y: 0.2
+      z: 1
+    - tick: 6
+      x: 1
+      y: 0.2
+      z: 0.2
+    - tick: 8
+      x: 1
+      y: 0
+      z: 0.2
+    - tick: 10
+      x: 0
+      y: 0
+      z: 0.2
+
+rift-scrolls:
+  # Shared chance (%) for ONE scroll from the eligible skin-id entries, otherwise none.
+  # Ordinary replaces-all loot takes priority over this group.
+  chance: 50
+
+rift-loot:
+  # Optional QUACK scroll examples (uncomment and use real skin IDs from QUACK):
+  # - id: common_scroll
+  #   skin-id: common_skin
+  #   weight: 7
+  # - id: rare_scroll
+  #   skin-id: rare_skin
+  #   weight: 2
+  # - id: legendary_scroll
+  #   skin-id: legendary_skin
+  #   weight: 1
+  # Relative weights 7/2/1 mean 70%/20%/10% WITHIN the successful scroll group.
+  # With the shared 50% chance, the final chances are 35%/10%/5% per reward roll.
+  # Weights need not total 100; zero/negative/invalid weights are excluded.
+  # If weight is omitted, the existing chance value is used as the relative weight.
+  # Scroll chance is not rolled individually; guaranteed-in-cycle is ignored with a warning.
+  # Include desired IDs for a wave type: loot: [common_scroll, rare_scroll, legendary_scroll].
+  # Only scrolls included in that wave type's loot table participate in the group.
+  # A selected scroll with replaces-all: true suppresses all other loot.
+  # Skin entries always give ONE authentic scroll; material/name/lore/min/max are ignored.
+  # Missing/old QUACK or unknown skin ID: skip this item and log a warning.
+  - material: CHAIN_COMMAND_BLOCK
+    id: chrono_token
+    item-model: wooden_hoe
+    custom-model-data: chrono_token
+    name: <gradient:#f7fdff:#0078ce><italic:false>Хроно-жетон</italic:false></gradient>
+    lore:
+      - <italic:false><gray>Можно обменять на:</gray>
+      - <italic:false><gradient:#f7fdff:#0078ce>• Различная косметика</gradient>
+      - <italic:false><gradient:#f7fdff:#0078ce>• Особые предметы</gradient>
+    min: 1
+    max: 3
+    chance: 100
+  - material: DEEPSLATE_DIAMOND_ORE
+    id: ars
+    min: 1
+    max: 7
+    chance: 20
+    guaranteed-in-cycle: true
+  - material: TORCHFLOWER_SEEDS
+    id: shlak
+    alternatives:
+      - PITCHER_POD
+    min: 2
+    max: 4
+    chance: 50
+  - material: CAKE
+    id: imba
+    lore:
+      - <italic:false><gray>• Торт - не ложь</gray>
+    min: 1
+    max: 1
+    chance: 0.5
+    replaces-all: true
+  - material: TOTEM_OF_UNDYING
+    id: totem
+    min: 1
+    max: 3
+    chance: 100
+  - material: CHAIN_COMMAND_BLOCK
+    id: blueprint_guitar
+    item-model: wooden_hoe
+    custom-model-data: guitar_blueprint
+    name: <white><italic:false>Схема создания</italic:false></white>
+    lore:
+      - <italic:false><gray>Можно использовать для:</gray>
+      - <italic:false><light_purple>• Создания Боевой гитары</light_purple>
+    min: 1
+    max: 1
+    chance: 75
+  - material: CHAIN_COMMAND_BLOCK
+    id: blueprint_heart
+    item-model: wooden_hoe
+    custom-model-data: stone_heart_blueprint
+    name: <white><italic:false>Схема создания</italic:false></white>
+    lore:
+      - <italic:false><gray>Можно использовать для:</gray>
+      - <italic:false><aqua>• Создания Окаменевшего сердца</aqua>
+    min: 1
+    max: 1
+    chance: 50
+  - material: CHAIN_COMMAND_BLOCK
+    id: blueprint_reaper
+    item-model: wooden_hoe
+    custom-model-data: soul_reaper_scythe_blueprint
+    name: <white><italic:false>Схема создания</italic:false></white>
+    lore:
+      - <italic:false><gray>Можно использовать для:</gray>
+      - <italic:false><light_purple>• Создания Серп Урожая Душ</light_purple>
+    min: 1
+    max: 1
+    chance: 50
+  - material: CHAIN_COMMAND_BLOCK
+    id: nitro_token
+    item-model: wooden_hoe
+    custom-model-data: nitro_token
+    name: <gradient:#EA8D6E:#BF1F00><italic:false>Нитро-жетон</italic:false></gradient>
+    lore:
+      - <italic:false><gray>Можно обменять на:</gray>
+      - <italic:false><gradient:#EA8D6E:#BF1F00>• Декали Гравибайка</gradient>
+    min: 3
+    max: 9
+    chance: 100
+  - material: CHAIN_COMMAND_BLOCK
+    id: blueprint_bike
+    item-model: wooden_hoe
+    custom-model-data: bike_blueprint
+    name: <white><italic:false>Схема создания</italic:false></white>
+    lore:
+      - <italic:false><gray>Можно использовать для:</gray>
+      - <italic:false><light_purple>• Создания Гравибайка</light_purple>
+    min: 1
+    max: 1
+    chance: 50
+
+  # Conditional guitar group chances: common 60%, uncommon 25%, rare 14%, gold 1%.
+  # Total weight 30; each three-guitar group splits its chance equally.
+  # rift-scrolls.chance remains the shared gate before selecting a guitar.
+  - id: scroll_guitar_blue
+    skin-id: guitar_blue
+    weight: 6
+  - id: scroll_guitar_wave
+    skin-id: guitar_wave
+    weight: 2.5
+  - id: scroll_guitar_litghtningbolt
+    skin-id: guitar_litghtningbolt
+    weight: 1.4
+  - id: scroll_guitar_black
+    skin-id: guitar_black
+    weight: 6
+  - id: scroll_guitar_gradient
+    skin-id: guitar_gradient
+    weight: 2.5
+  - id: scroll_guitar_mgla
+    skin-id: guitar_mgla
+    weight: 1.4
+  - id: scroll_guitar_white
+    skin-id: guitar_white
+    weight: 6
+  - id: scroll_guitar_badtime
+    skin-id: guitar_badtime
+    weight: 2.5
+  - id: scroll_guitar_glem
+    skin-id: guitar_glem
+    weight: 1.4
+  - id: scroll_guitar_gold
+    skin-id: guitar_gold
+    weight: 0.3
+
+sounds:
+  # Звук нажатия на настоящую бумагу в меню калибровки (успех).
+  # Имя можно писать как в конфиге ресурспака (block.note_block.bit) или как в Bukkit (BLOCK_NOTE_BLOCK_BIT).
+  # Пустое значение — звук выключен.
+  calibration-click: block.note_block.bit
+  calibration-click-volume: 1
+  calibration-click-pitch: 1.5
+  # Звук нажатия на фейковую бумагу (промах: этап начинается заново).
+  calibration-fake-click: block.note_block.bit
+  calibration-fake-click-volume: 1
+  calibration-fake-click-pitch: 0
+
+  # Кастомные звуки ресурспака. Имя — путь звука из sounds.json вашего ресурспака с namespace,
+  # например «towers:rift_close». Значения ниже — плейсхолдеры: замените их на свои id.
+  # Пустое значение — звук выключен. Громкость и высота — ключами «-volume» и «-pitch».
+  # Звук выполненного задания (последняя волна отбита).
+  quest-complete: "quack_ambient:rift_end"
+  quest-complete-volume: 10
+  quest-complete-pitch: 1
+  # Звук открывшегося разлома.
+  rift-open: "quack_ambient:rift_open"
+  rift-open-volume: 10
+  rift-open-pitch: 1
+  # Звук начала волны.
+  wave-start: "quack_ambient:rift_wave"
+  wave-start-volume: 10
+  wave-start-pitch: 1
+  # Звук закрытия разлома (когда разлом исчезает после волн, отмены или сброса).
+  rift-close: "quack_ambient:rift_end"
+  rift-close-volume: 10
+  rift-close-pitch: 1
+  # Амбиент разлома, пока он спит/открыт и волны ещё не начались.
+  # Играется только владельцу, пока тот в радиусе 64 блоков от разлома.
+  rift-ambient: "quack_ambient:rift"
+  rift-ambient-volume: 10
+  rift-ambient-pitch: 1
+  # Звук боя: запускается при открытии разлома и останавливается при закрытии разлома.
+  battle: "quack_ambient:rift_battle"
+  battle-volume: 10
+  battle-pitch: 1
+  # Длительность ambient_rift в секундах: после неё амбиент запускается снова, пока разлом ждёт игрока.
+  rift-ambient-interval-seconds: 44
+  # Длительность battle-трека в секундах: после неё музыка перезапускается, пока идёт бой.
+  battle-interval-seconds: 60
+
+messages:
+  reloaded: <green>Конфигурация перезагружена.
+  # no-quest: <red>У вас нет доступных заданий.
+  # quest-selected: <green>Задание выбрано. Отправляйтесь к вышке калибровки.
+  # quest-limit: <red>Сначала завершите текущее задание.
+  # calibration-complete: <green>Калибровка завершена.
+  # quest-complete: <green>Задание выполнено!
+  # calibration-miss: <red>Фальшивая бумага! Этап начинается заново.
+  # calibration-hit: <green>Этап пройден! Следующий этап.
+  # calibration-required: <red>Сначала завершите калибровку.
+  # computer-required: <red>Сначала откройте компьютер, который определит область волн.
+  # Сообщение, когда в области компьютера нет сухих чанков и волна не может начаться.
+  wave-no-dry-chunk: <red>В области поиска нет сухих участков — волны здесь не начнутся.
+  # Сообщение, когда волна начинается в чанке, где уже идёт волна другого игрока.
+  wave-shared-chunk: <yellow>Рядом уже идёт волна другого игрока — вы делите чанк.
+  # computer-wrong-tower: <red>Этот компьютер привязан к другой вышке.
+  # waves-active: <yellow>Волны уже идут.
+  computer-tower-not-found:
+    <red>Рядом не найдена пронумерованная вышка для привязки
+    компьютера.
+  # tower-wrong-quest: <red>Эта башня не соответствует выбранному заданию.
+  computer-spawned: <green>Компьютер привязан к вышке <white>{tower}<green> и создан.
+  # test-spawned: <green>Тестовые вышки созданы рядом с вами.
+  # test-reset: <green>Тестовое состояние сброшено.
+  # test-cancel: <green>Запущенное задание остановлено. Волны можно запустить заново.
+  # test-cancel-idle: <yellow>Активная волна не найдена — останавливать нечего.
+  test-rift-spawned: "<green>Тестовый рифт создан. Убрать его: <white>/towers test rift remove<green>."
+  # Сообщение, когда тестовый рифт не создан: место под ногами игрока в воде.
+  test-rift-blocked: "<red>Здесь вода — тестовый рифт не создан."
+  test-rift-removed: "<green>Тестовые рифты удалены: <white>{count}<green>."
+  quest-reset: <green>Активное задание игрока <white>{player}<green> сброшено.
+  quest-reset-none: <yellow>У игрока <white>{player}<yellow> нет активного задания.
+  quest-given: <green>Задание «Вышка <white>{tower}<green>» выдано игроку <white>{player}<green>.
+  quest-given-active: <yellow>У игрока уже идёт задание для вышки <white>{tower}<yellow>.

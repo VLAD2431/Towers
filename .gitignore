@@ -1,0 +1,25 @@
+# Сборка Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Настройки IDE
+.idea/
+*.iml
+.vscode/
+.eclipse/
+
+# Локальный тестовый сервер и логи
+run/
+logs/
+crash-reports/
+*.jar
+*.db
+*.db-wal
+*.db-shm
+
+# Секреты
+.env

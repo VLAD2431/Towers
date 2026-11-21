@@ -1,0 +1,14 @@
+name: Towers
+version: "${version}"
+main: VLADMIX90.towers.Towers
+api-version: "1.21.7"
+load: POSTWORLD
+softdepend: [CustomMob, QUACK-by-VLADMIX90]
+commands:
+  towers:
+    description: Towers administration — numbered calibration towers and bound chunk computers
+    usage: /towers <reload|refresh|spawn <1-16|central|computer>|remove <1-16|central|calibration|chunk|all>|give <player> <1-16>|reset <player>|wave <type>|test loot [type]>
+    permission: towers.admin
+permissions:
+  towers.admin:
+    default: op
